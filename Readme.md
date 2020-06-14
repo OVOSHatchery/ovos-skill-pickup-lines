@@ -8,7 +8,7 @@ Pickup lines from http://www.pickuplinegen.com/ and https://www.pickuplinesgalor
 ## About
 
 ![](./screenie.png)
-![](./screenie2.png)
+![](./screenie1.png)
 
 Includes idle screen
 
