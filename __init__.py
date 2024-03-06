@@ -1,197 +1,66 @@
-from mycroft import MycroftSkill, intent_file_handler, intent_handler
-from mycroft.skills.core import resting_screen_handler
-from os.path import join, dirname
-from adapt.intent import IntentBuilder
-import requests
 import random
+from os.path import join, dirname
+
+import requests
 from bs4 import BeautifulSoup
+from ovos_workshop.decorators import intent_handler
+from ovos_workshop.decorators import resting_screen_handler
+from ovos_workshop.intents import IntentBuilder
+from ovos_workshop.skills import OVOSSkill
 
 
-class PickupLineSkill(MycroftSkill):
-    categories = ['cheesy',
-                   'crude',
-                   'women',
-                   'tinder',
-                   'computer',
-                   'harrypotter',
-                   'math',
-                   'biochem',
-                   'physics',
-                   'musician',
-                   'disney',
-                   'vegan',
-                   'scifi',
-                   'warcraft',
-                   'videogame',
-                   'pokemon',
-                   'rejections',
-                   'desi',
-                   'astronomy',
-                   'redneck',
-                   'food',
-                   'engineering',
-                   'gameofthrones',
-                   'lotr',
-                   'hungergames',
-                   'twilight',
-                   'doctorwho',
-                   'breakingbad',
-                   'madmen',
-                   'himym',
-                   'bigbangtheory',
-                   'brandname',
-                   'gaylesbian',
-                   'travel',
-                   'bad',
-                   'mean',
-                   'golf',
-                   'basketball',
-                   'football',
-                   'baseball',
-                   'bowling',
-                   'hockey',
-                   'soccer',
-                   'lacrosse',
-                   'tennis',
-                   'volleyball',
-                   'cheerleader',
-                   'gym',
-                   'yoga',
-                   'biker',
-                   'beach',
-                   'casino',
-                   'waitress',
-                   'anime',
-                   'halo',
-                   'callofduty',
-                   'mario',
-                   'zelda',
-                   'minecraft',
-                   'fortnite',
-                   'leaguelegends',
-                   'superman',
-                   'avengers',
-                   'justinbieber',
-                   'drake',
-                   'political',
-                   'trump',
-                   'twitter',
-                   'marijuana',
-                   'doctor',
-                   'dentist',
-                   'law',
-                   'stockmarket',
-                   'economics',
-                   'realestate',
-                   'business',
-                   'tall',
-                   'shakespeare',
-                   'senior',
-                   'psychology',
-                   'gothic',
-                   'robot',
-                   'celebrity',
-                   'treehugger',
-                   'artist',
-                   'olympics',
-                   'police',
-                   'walkingdead',
-                   'bookworm',
-                   'wedding',
-                   'airport',
-                   'satprep',
-                   'modelun',
-                   'backtoschool',
-                   'christian',
-                   'jewish',
-                   'islamic',
-                   'catholic',
-                   'hindu',
-                   'mormon',
-                   'buddhist',
-                   'atheist',
-                   'scientology',
-                   'car',
-                   'cowboy',
-                   'mexican',
-                   'french',
-                   'spanish',
-                   'portuguese',
-                   'germany',
-                   'italian',
-                   'sweden',
-                   'finnish',
-                   'czech',
-                   'dutch',
-                   'australian',
-                   'jamaican',
-                   'denmark',
-                   'norway',
-                   'iceland',
-                   'croatian',
-                   'filipino',
-                   'polish',
-                   'indonesian',
-                   'canadian',
-                   'stpattys',
-                   'bollywood',
-                   'movie',
-                   'musicfestival',
-                   'fencing',
-                   'historical',
-                   'alien',
-                   'ethnicity',
-                   'breakup',
-                   'valentinesday',
-                   'coffee',
-                   'accountant',
-                   'animal',
-                   'military',
-                   'chocolate',
-                   'icecream',
-                   'blackfriday',
-                   'ghetto',
-                   'magic',
-                   'firefighter',
-                   'pizza',
-                   'christmas',
-                   'halloween',
-                   'easter',
-                   'thanksgiving',
-                   'independence',
-                   'nye',
-                   'pirate',
-                   'medieval',
-                   'dog',
-                   'memes']
+class PickupLineSkill(OVOSSkill):
+    categories = [
+        'cheesy', 'crude', 'women', 'tinder', 'computer', 'harrypotter',
+        'math', 'biochem', 'physics', 'musician', 'disney', 'vegan', 'scifi',
+        'warcraft', 'videogame', 'pokemon', 'rejections', 'desi', 'astronomy',
+        'redneck', 'food', 'engineering', 'gameofthrones', 'lotr',
+        'hungergames', 'twilight', 'doctorwho', 'breakingbad', 'madmen',
+        'himym', 'bigbangtheory', 'brandname', 'gaylesbian', 'travel', 'bad',
+        'mean', 'golf', 'basketball', 'football', 'baseball', 'bowling',
+        'hockey', 'soccer', 'lacrosse', 'tennis', 'volleyball', 'cheerleader',
+        'gym', 'yoga', 'biker', 'beach', 'casino', 'waitress', 'anime', 'halo',
+        'callofduty', 'mario', 'zelda', 'minecraft', 'fortnite',
+        'leaguelegends', 'superman', 'avengers', 'justinbieber', 'drake',
+        'political', 'trump', 'twitter', 'marijuana', 'doctor', 'dentist',
+        'law', 'stockmarket', 'economics', 'realestate', 'business', 'tall',
+        'shakespeare', 'senior', 'psychology', 'gothic', 'robot', 'celebrity',
+        'treehugger', 'artist', 'olympics', 'police', 'walkingdead',
+        'bookworm', 'wedding', 'airport', 'satprep', 'modelun', 'backtoschool',
+        'christian', 'jewish', 'islamic', 'catholic', 'hindu', 'mormon',
+        'buddhist', 'atheist', 'scientology', 'car', 'cowboy', 'mexican',
+        'french', 'spanish', 'portuguese', 'germany', 'italian', 'sweden',
+        'finnish', 'czech', 'dutch', 'australian', 'jamaican', 'denmark',
+        'norway', 'iceland', 'croatian', 'filipino', 'polish', 'indonesian',
+        'canadian', 'stpattys', 'bollywood', 'movie', 'musicfestival',
+        'fencing', 'historical', 'alien', 'ethnicity', 'breakup',
+        'valentinesday', 'coffee', 'accountant', 'animal', 'military',
+        'chocolate', 'icecream', 'blackfriday', 'ghetto', 'magic',
+        'firefighter', 'pizza', 'christmas', 'halloween', 'easter',
+        'thanksgiving', 'independence', 'nye', 'pirate', 'medieval', 'dog',
+        'memes'
+    ]
 
     @staticmethod
     def get_line(category="random"):
         if category == "random":
-            url = "http://www.pickuplinegen.com/"
-        else:
-            url = "http://www.pickuplinesgalore.com/"
-            url += category + ".html"
+            category = random.choice(PickupLineSkill.categories)
 
-        if category == "random":
-            soup = BeautifulSoup(requests.get(url).text, "html.parser")
-            return soup.select("body > section > div#content")[0].text.strip()
-        else:
-            soup = BeautifulSoup(requests.get(url).text, "html.parser")
-            lines = "".join([i.text for i in soup.select(
-                "main > p.action-paragraph.paragraph > span.paragraph-text-7")]).split(
-                "\n\n")
-            return random.choice(lines)
+        url = f"http://www.pickuplinesgalore.com/{category}.html"
+
+        soup = BeautifulSoup(requests.get(url).text, "html.parser")
+        lines = "".join([
+            i.text for i in soup.select(
+                "main > p.action-paragraph.paragraph > span.paragraph-text-7"
+            )
+        ]).split("\n\n")
+        return random.choice(lines)
 
     def initialize(self):
         if "default_category" not in self.settings:
-            self.settings["default_category"] = "random"
+            self.settings["default_category"] = "cheesy"
 
-    def get_intro_message(self):
-        # welcome dialog on skill install
-        self.speak_dialog("intro", {"skill_name": "pickup lines"})
-
-    def update_line(self, category="random"):
+    def update_line(self, category="cheesy"):
         self.gui['line'] = self.get_line(category)
 
     @resting_screen_handler("PickupLines")
@@ -213,7 +82,7 @@ class PickupLineSkill(MycroftSkill):
     def handle_line(self, message):
         self.speak_line(self.settings["default_category"])
 
-    @intent_file_handler("source.intent")
+    @intent_handler("source.intent")
     def handle_source(self, message):
         self.gui.show_image(join(dirname(__file__), "logo.png"),
                             fill='PreserveAspectFit')
@@ -1161,7 +1030,3 @@ class PickupLineSkill(MycroftSkill):
                     .optionally("about"))
     def handle_memes_pickup_line(self, message):
         self.speak_line("memes")
-
-
-def create_skill():
-    return PickupLineSkill()
